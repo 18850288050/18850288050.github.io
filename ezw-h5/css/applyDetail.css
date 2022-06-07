@@ -1,0 +1,41 @@
+body {
+	background-color: #f6f6f6;
+}
+
+.list {
+	margin-top: .2rem;
+}
+
+.item {
+	background-color: #fff;
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	font-size: .34rem;
+	color: #333;
+	padding: .25rem .3rem;
+	box-sizing: border-box;
+}
+.item .lt.blue{
+	color: #0081FF;
+}
+.item .rt {
+	flex: 1;
+	margin-left: .3rem;
+	text-align: right;
+}
+
+.item:not(:last-child) {
+	border-bottom: 1px solid #F6F6F6;
+}
+
+.btn {
+	width: 90%;
+	background: #0081FF;
+	margin: 0.5rem auto;
+	border-radius: 0.1rem;
+	font-size: .36rem;
+	color: #fff;
+	text-align: center;
+	line-height: .85rem;
+}

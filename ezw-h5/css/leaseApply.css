@@ -1,0 +1,73 @@
+body{
+	background-color: #f6f6f6;
+}
+.form-wrap{
+	padding-top: .3rem ;
+}
+.form-item{
+	display: flex;
+	align-items: center;
+	padding: .2rem .3rem;
+	box-sizing: border-box;
+	background-color: #fff;
+}
+.form-item .form-label{
+	font-size: .32rem;
+	min-width: 1.1rem;
+}
+.form-item .form-input{
+	flex: 1;
+	border: none;
+	outline: none;
+	font-size: .32rem;
+	margin-left: .3rem;
+}
+.form-item .form-input.maxlen{
+	max-width: 3.5rem;
+}
+.form-item .form-right{
+	padding: .1rem .2rem;
+	background-color: #0081FF;
+	color: #fff;
+	font-size: .26rem;
+	border-radius: .1rem;
+	box-sizing: border-box;
+	min-width: 1.7rem;
+	text-align: center;
+}
+.form-item .form-select{
+	flex: 1;
+	margin-left: .3rem;
+	font-size: .3rem;
+	height: .5rem;
+}
+.form-item:not(:last-child){
+	border-bottom: 1px solid #f6f6f6;
+}
+.form-item.form-item1{
+	flex-flow: column;
+	align-items: baseline;
+}
+.form-item.form-item1 .form-input{
+	margin-top: .3rem;
+}
+.form-item.form-item1 .form-textarea{
+	margin-top: .3rem;
+	width: 96%;
+	flex: 1;
+	border: none;
+	outline: none;
+	font-size: .32rem;
+	margin-left: .3rem;
+	resize:none;
+}
+.form-submit-btn{
+	background-color: #0081FF;
+	color: #fff;
+	text-align: center;
+	border-radius: .1rem;
+	font-size: .36rem;
+	width: 92%;
+	margin: 1rem auto 0;
+	line-height: .8rem;
+}

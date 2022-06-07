@@ -1,0 +1,162 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+
+ul li,
+ol li {
+	list-style-type: none;
+}
+
+html,
+body {
+	width: 100%;
+	height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+html {
+	font-size: 50px;
+}
+
+.back-header {
+	width: 100%;
+	padding: .3rem;
+	box-sizing: border-box;
+	font-size: .36rem;
+	color: #fff;
+	background-color: #1f98ff;
+	height: 1.1rem;
+}
+
+.back {
+	position: relative;
+}
+
+.back::before,
+.back::after {
+	position: absolute;
+	content: " ";
+	background-color: #fff;
+	left: 0.175rem;
+	width: 1px;
+	height: 0.3rem;
+}
+
+.back::before {
+	transform: rotate(135deg);
+	top: 0.2rem;
+}
+
+.back::after {
+	transform: rotate(-135deg);
+	top: 0rem;
+}
+
+.back-header .title {
+	padding: 0 .6rem;
+	box-sizing: border-box;
+}
+
+.func-list {
+	padding: .3rem;
+	box-sizing: border-box;
+}
+
+.func-item {
+	padding: .3rem 0;
+	box-sizing: border-box;
+}
+
+.func-item:not(:last-child) {
+	border-bottom: 1px solid #e0e0e0;
+}
+
+.func-item .func-title {
+	display: flex;
+	align-items: center;
+	margin-bottom: .2rem;
+}
+
+.func-title span {
+	background-color: #1F98FF;
+	width: .05rem;
+	height: .3rem;
+	margin-right: .1rem;
+}
+
+.func-title p {
+	font-size: .3rem;
+	color: #333;
+	font-weight: bold;
+}
+
+.func-item .content,
+.txt-list,
+.txt-list p {
+	font-size: .28rem;
+	color: #333;
+	padding-left: .15rem;
+	box-sizing: border-box;
+	text-align: justify;
+	line-height: .45rem;
+}
+
+img {
+	max-width: 100%;
+}
+
+.bottom-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: .36rem;
+	color: #fff;
+	width: 6.9rem;
+	height: .96rem;
+	border-radius: .12rem;
+	background-color: #016EFF;
+	margin: .5rem auto;
+}
+
+.bottom-btn img {
+	width: .36rem;
+	height: .36rem;
+	margin-right: .3rem;
+}
+
+.notice-wrap {
+	padding: .3rem;
+	box-sizing: border-box;
+}
+
+.notice-wrap .title {
+	font-size: .34rem;
+	color: #333;
+	margin-bottom: .2rem;
+}
+
+.notice-wrap .datetime-box {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	font-size: .3rem;
+	color: #999;
+	border-bottom: 1px solid #d7d7d7;
+	padding-bottom: .2rem;
+	margin-bottom: .5rem;
+}
+
+.notice-wrap .content {
+	font-size: .3rem;
+	color: #333;
+	line-height: .5rem;
+	text-indent: 2em;
+}
+.content p{
+	text-indent: 2em;
+	margin-bottom: .15rem;
+}

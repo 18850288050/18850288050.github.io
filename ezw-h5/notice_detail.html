@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" />
+		<title>公告详情</title>
+		<link rel="stylesheet" type="text/css" href="css/common.css"/>
+		<link rel="stylesheet" type="text/css" href="css/detail.css" />
+	</head>
+	<body>
+		<div class="wrap">
+			<div class="notice-wrap">
+				<p class="title" id="title"></p>
+				<div class="datetime-box">
+					<p class="lt" id="date"></p>
+					<p class="rt" id="time"></p>
+				</div>
+				<div class="content" id="content"></div>
+			</div>
+		</div>
+		<script src="js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			if(sessionStorage.getItem('noticeObj')){
+				var noticeObj=JSON.parse(sessionStorage.getItem('noticeObj'))
+				$("#title").html(noticeObj.title)
+				$("#date").text(noticeObj.year+'/'+noticeObj.month+'/'+noticeObj.day)
+				$("#time").text(noticeObj.time)
+				
+				var content= noticeObj.content
+				var contentArr= content.split("<br/>")
+				var html=''
+				for(var i=0;i<contentArr.length;i++){
+					(function(){
+						html+='<p>'+contentArr[i]+'</p>'
+					})(i)
+				}
+				
+				$("#content").html(html)
+			}
+		</script>
+	</body>
+</html>

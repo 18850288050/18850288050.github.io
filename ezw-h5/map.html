@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport"
+			content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" />
+		<title>地图</title>
+		<link rel="stylesheet" type="text/css" href="css/common.css" />
+		<style type="text/css">
+			#app {
+				width: 100%;
+				height: 100%;
+			}
+
+			.mapContainer {
+				width: 100%;
+				height: 100%;
+				overflow: hidden;
+			}
+
+			.amap-info-content {
+				border-radius: 4px;
+			}
+
+			.amap-info-content p {
+				font-size: 12px;
+			}
+
+			.amap-info-close,
+			.amap-info-sharp {
+				display: none;
+			}
+
+			.amap-info-outer {
+				box-shadow: none;
+			}
+
+			.list {
+				padding: 0 .4rem;
+				box-sizing: border-box;
+			}
+
+			.list-title {
+				font-size: .36rem;
+				margin: .2rem 0;
+				color: #0081FF;
+			}
+
+			.search-bar {
+				display: flex;
+				align-items: center;
+				border: 1px solid #1F98FF;
+				border-radius: .1rem;
+				overflow: hidden;
+				margin-bottom: .05rem;
+			}
+
+			.search-bar input {
+				outline: none;
+				border: none;
+				flex: 1;
+				font-size: .3rem;
+				color: #333;
+				text-indent: 1em;
+			}
+
+			.search-bar .btn {
+				font-size: .3rem;
+				color: #fff;
+				background-color: #1f98ff;
+				width: 1.3rem;
+				text-align: center;
+				height: .8rem;
+				line-height: .8rem;
+			}
+
+			.search-list {
+				max-height: 4rem;
+				overflow-y: auto;
+			}
+
+			.search-item {
+				display: flex;
+				align-items: flex-start;
+				font-size: .3rem;
+				color: #333;
+				padding: .2rem 0;
+				border-bottom: 1px solid #f6f6f6;
+			}
+
+			.footer {
+				position: fixed;
+				bottom: 0;
+				left: 0;
+				width: 100%;
+				padding: .3rem;
+				box-sizing: border-box;
+				z-index: 9999;
+				background-color: #fff;
+				display: flex;
+				align-items: center;
+			}
+
+			.footer .lt {
+				flex: 1;
+				font-size: .3rem;
+				color: #333;
+			}
+
+			.footer .rt {
+				color: #fff;
+				padding: .1rem .18rem;
+				border-radius: 5px;
+				cursor: pointer;
+				outline: none;
+				font-size: .28rem;
+				box-sizing: border-box;
+				background-color: #1F98FF;
+				margin-left: .5rem;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="app" v-cloak>
+			<div id="mapContainer" class="mapContainer"></div>
+			<div class="footer">
+				<div class="lt">
+					<p id="name"></p>
+					<p id="address"></p>
+					<p id="tel"></p>
+				</div>
+				<p class="rt" id="dh">立即导航</p>
+			</div>
+			<div class="alert-bg" v-if="searchVisible">
+				<div class="alert-wrap">
+					<div class="alert-box">
+						<p class="p-alert-title bold">{{fwzName}}站点可办业务</p>
+						<div class="list">
+							<div class="search-bar">
+								<input type="text" placeholder="输入关键词" v-model="searchVal" />
+								<p class="btn" @click="search">搜索</p>
+							</div>
+							<p class="list-title">办理事项：</p>
+							<div class="search-list">
+								<div class="search-item" v-for="(item,index) in list" :key="index">
+									<p>{{index+1}}.</p>
+									<p>{{item.moduleName}}</p>
+								</div>
+							</div>
+						</div>
+						<div class="alert-btn">
+							<p class="btn" @click="searchVisible=false">取消</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<!-- H5 与闽政通交互能力基础 js -->
+		<!-- <script src="https://mztapp.fujian.gov.cn:8190/mztAppWeb/app/js/mztHybrid.js"></script> -->
+		<!-- <script src="https://mztapp.fujian.gov.cn:8190/mztAppWeb/app/js/zepto.js"></script> -->
+		<!-- 必引 cordova.js，实现与原生的交互 -->
+		<!-- <script src="https://mztapp.fujian.gov.cn:8190/mztAppWeb/app/js/cordova.js"> </script> -->
+		<!-- 含闽政通获取地市信息，网络状态等方法 -->
+		<!-- <script src="https://mztapp.fujian.gov.cn:8190/mztAppWeb/app/js/bingotouch.js"></script> -->
+		<!-- 含闽政通获取用户信息，分享，获取版本号，人脸识别方法 -->
+		<!-- <script src="https://mztapp.fujian.gov.cn:8190/mztAppWeb/app/js/jmtplugins.js"></script> -->
+		<!-- js 加解密 -->
+		<!-- <script src="https://mztapp.fujian.gov.cn:8190/mztAppWeb/app/js/jsencrypt.js"></script> -->
+
+		<!-- H5 与闽政通交互能力基础 js --> 
+		<script src="https://mztapp.fujian.gov.cn:8190/mztAppWeb/app/js/mztHybrid.js"></script> 
+		<!--解密用户信息 js --> 
+		<script src="https://mztapp.fujian.gov.cn:8190/mztAppWeb/app/js/jsencrypt.js"></script>
+		<script type="text/javascript"
+			src="https://webapi.amap.com/maps?v=1.4.12&key=ae258dfd22e75e306de869d4a0fdcee2&plugin=AMap.ToolBar"></script>
+		<script src="js/common.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/vue.min.js" type="text/javascript" charset="utf-8"></script>
+		<script>
+			new Vue({
+				el: '#app',
+				data() {
+					return {
+						searchVisible: false,
+						searchVal: "",
+						list: [],
+						totalList: [],
+						fwzName: ""
+					}
+				},
+				mounted() {
+					var that = this;
+					setTimeout(function(){
+						app.getLocation(function(res) {
+							var result = JSON.parse(JSON.stringify(res))
+							that.init(result.longitude, result.latitude, result.title, result.subTitle)
+						}, function(error) {
+							alert(error);
+						})
+					},300)
+					// this.init('118.132602','24.518363','火炬园')
+				},
+				methods: {
+					init(lng, lat, title, subTitle) {
+						var that = this;
+						var map = '',
+							marker = '',
+							clickAddressName = title
+						clickPosition = [lng, lat]
+						map = new AMap.Map("mapContainer", {
+							zoom: 18,
+							center: [lng, lat]
+						});
+						//解析定位结果
+						function onComplete(data) {
+							var str = [];
+							console.log('data==', data)
+							str.push(data.position.getLng());
+							str.push(data.position.getLat());
+							map.center = str
+						}
+
+						//解析定位错误信息
+						function onError(data) {
+							document.getElementById('mapContainer').innerHTML = '定位失败';
+						}
+
+						var params = {
+							page: {
+								page: 1,
+								pageSize: 1000,
+								total: 0
+							},
+							params: {
+								code: '', // String 服务站编码 N 模糊查询
+								name: '', // String 服务站名称 N 模糊查询
+								province: '350000', // String 省份 N 模糊查询
+								city: '', // String 市 N 模糊查询
+								area: '', // String 区县 N 模糊查询
+								address: '', // String 地址 N 模糊查询
+								projectId: '', // String 所属项目 N 
+								type: '', // String 类型 N 
+								status: '', // String 类型 N 
+								longitude: '' // String 经度 N
+							}
+						}
+						$.ajax({
+							url: '/ptp/device/device/listMap',
+							type: 'post',
+							headers: {
+								'content-type': 'application/json;charset=UTF-8'
+							},
+							data: JSON.stringify(params),
+							success: function(res) {
+								if (res.success) {
+
+									var markerList = [...res.result, {
+										name: title,
+										longitude: lng,
+										latitude: lat,
+										address: subTitle
+									}];
+
+									markerList.forEach(item => {
+										if (item.longitude && item.latitude) {
+											var icon = {}
+											if (item.longitude == lng && item.latitude == lat) {
+												icon = new AMap.Icon({
+													size: new AMap.Size(23, 30),
+													image: 'image/pos@2x.png',
+													imageSize: new AMap.Size(23, 30)
+												})
+											} else {
+												icon = new AMap.Icon({
+													size: new AMap.Size(40, 55),
+													image: 'image/blue.png',
+													imageSize: new AMap.Size(40, 55)
+												})
+											}
+
+											marker = new AMap.Marker({
+												map: map,
+												icon: icon,
+												position: [item.longitude, item.latitude]
+											})
+											marker.on('click', function(e) {
+												var info = new AMap.InfoWindow({
+													offset: new AMap.Pixel(0, -
+													35), //修改label相对于maker的位置
+													content: '<p>' + item.name +
+														'</p>' //'<p>营业时间：' + item.beginTime + '</p>'
+												})
+												info.open(map, [item.longitude, item
+													.latitude])
+												$("#name").text(item.name)
+												$("#address").text(item.address)
+												$("#tel").text(item.contactTel)
+												clickAddressName = item.name
+												clickPosition = [item.longitude, item
+													.latitude
+												]
+												that.fwzName = item.name
+												that.loadList(item.city)
+											})
+										}
+									})
+								}
+							}
+						})
+						$("#dh").click(function() {
+							// marker.markOnAMAP({
+							// 	position: clickPosition
+							// })
+							var param = {};
+							param.dlat = clickPosition[1];
+							param.dlon = clickPosition[0];
+							param.dname = clickAddressName;
+							app.link.getMapNavigator(function(res) {
+								alert(JSON.stringify(res))
+							}, param);
+						})
+					},
+					loadList(areaCode) {
+						var that = this
+						var params = {
+							page: {
+								page: 1,
+								pageSize: 1000,
+								total: 0
+							},
+							params: {
+								moduleName: "", // String 服务名称 N 模糊查询
+								areaCode: areaCode
+							}
+						}
+						$.ajax({
+							url: '/ptp/business/bmModuleInfo/GetCityTreeWmh',
+							type: 'post',
+							headers: {
+								'content-type': 'application/json;charset=UTF-8'
+							},
+							data: JSON.stringify(params),
+							success: function(res) {
+								var arr = []
+								if (res.success) {
+									for (var i in res.result) {
+										arr = [...arr, ...res.result[i]]
+									}
+									that.totalList = arr
+									that.list = arr
+								} else {
+									that.totalList = arr
+									that.list = []
+								}
+								that.searchVisible = true
+							}
+						})
+					},
+					search() {
+						if (this.searchVal) {
+							this.list = this.totalList.filter(item => {
+								return item.moduleName.indexOf(this.searchVal) != -1
+							})
+						} else {
+							this.list = this.totalList
+						}
+					}
+				}
+			})
+		</script>
+	</body>
+</html>

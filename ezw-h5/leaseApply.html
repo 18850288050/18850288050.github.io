@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport"
+			content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" />
+		<title>租赁申请</title>
+		<link rel="stylesheet" type="text/css" href="css/common.css" />
+		<link rel="stylesheet" type="text/css" href="css/leaseApply.css" />
+	</head>
+	<body>
+		<div class="wrap" id="app" v-cloak>
+			<div class="form-wrap">
+				<div class="form-item">
+					<p class="form-label">申请单位</p>
+					<input class="form-input" v-model="form.gsmc" type="text" placeholder="请输入申请单位" />
+				</div>
+				<div class="form-item">
+					<p class="form-label">联系人</p>
+					<input class="form-input" v-model="form.lxr" type="text" placeholder="请输入联系人" />
+				</div>
+				<div class="form-item">
+					<p class="form-label">联系方式</p>
+					<input class="form-input" v-model="form.lxfs" type="tel" maxlength="11" placeholder="请输入联系方式" />
+				</div>
+				<div class="form-item">
+					<p class="form-label">验证码</p>
+					<input class="form-input maxlen" v-model="form.code" type="tel" placeholder="请输入验证码" />
+					<p class="form-right" v-if="time>0">{{time}}s</p>
+					<p class="form-right" v-if="time==0" @click="send">获取验证码</p>
+				</div>
+				<div class="form-item form-item1">
+					<p class="form-label">申请建站地址</p>
+					<textarea class="form-textarea" v-model="form.zddz" type="text" placeholder="请输入申请建站地址"></textarea>
+				</div>
+				<div class="form-item">
+					<p class="form-label">站点开放时间</p>
+					<input class="form-input" v-model="form.startTime" type="time"
+						placeholder="请选择站点开放时间" />
+				</div>
+				<div class="form-item">
+					<p class="form-label">站点结束时间</p>
+					<input class="form-input" v-model="form.endTime" type="time"
+						placeholder="请选择站点结束时间" />
+				</div>
+				<div class="form-item">
+					<p class="form-label">选择单位性质</p>
+					<select class="form-select" v-model="form.gsxz" placeholder="请选择单位性质">
+						<option v-for="(item,index) in dwxzOpts" :key="index" :value ="item">{{item}}</option>
+					</select>
+				</div>
+				<div class="form-item">
+					<p class="form-label">选择站点类型</p>
+					<select class="form-select" v-model="form.zdlx" placeholder="请选择站点类型">
+						<option v-for="(item,index) in siteTypeOpts" :key="index" :value ="item">{{item}}</option>
+					</select>
+				</div>
+				<div class="form-item form-item1" v-if="form.zdlx=='其他'">
+					<p class="form-label">其他站点类型说明</p>
+					<textarea class="form-textarea" v-model="form.remark" type="text" placeholder="请输入其他站点类型说明"></textarea>
+				</div>
+				<p class="form-submit-btn" @click="submit">确认申请</p>
+			</div>
+			<div class="msg-bg" v-if="messageShow">
+				<div class="msg-wrap">
+					<p class="msg-content">{{message}}</p>
+				</div>
+			</div>
+		</div>
+
+		<script src="https://mztapp.fujian.gov.cn:8190/mztAppWeb/app/js/zepto.js"></script>
+		<!-- 必引 cordova.js，实现与原生的交互 -->
+		<script src="https://mztapp.fujian.gov.cn:8190/mztAppWeb/app/js/cordova.js"> </script>
+		<!-- 含闽政通获取地市信息，网络状态等方法 -->
+		<script src="https://mztapp.fujian.gov.cn:8190/mztAppWeb/app/js/bingotouch.js"></script>
+		<!-- 含闽政通获取用户信息，分享，获取版本号，人脸识别方法 -->
+		<script src="https://mztapp.fujian.gov.cn:8190/mztAppWeb/app/js/jmtplugins.js"></script>
+		<!-- js 加解密 -->
+		<script src="https://mztapp.fujian.gov.cn:8190/mztAppWeb/app/js/jsencrypt.js"></script>
+
+		<script type="text/javascript"
+			src="http://webapi.amap.com/maps?v=1.3&key=ae258dfd22e75e306de869d4a0fdcee2&plugin=AMap.ToolBar"></script>
+
+		<script src="js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/vue.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/common.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			new Vue({
+				el: '#app',
+				data() {
+					return {
+						messageShow: false,
+						message: '',
+						form: {
+							openId:'',
+							gsmc: '',
+							lxr: '',
+							lxfs: '',
+							code: '',
+							zddz: '',
+							startTime: '',
+							endTime: '',
+							gsxz:'',
+							zdlx: '',
+							remark:''
+						},
+						time:0,
+						dwxzOpts:['国营', '合资', '私营','其他'],
+						siteTypeOpts:['便利店','地铁','车站','码头','大型企业园区','医院','银行','校园','写字楼','其他']
+					}
+				},
+				created() {
+
+				},
+				mounted() {
+					// alert(localStorage.getItem("openId"))
+				},
+				methods: {
+					getQueryVariable(variable) {
+						var query = window.location.search.substring(1);
+						var vars = query.split("&");
+						for (var i = 0; i < vars.length; i++) {
+							var pair = vars[i].split("=");
+							if (pair[0] == variable) {
+								return pair[1];
+							}
+						}
+						return (false);
+					},
+					send(){
+						var regPhone = /^1[3456789]\d{9}$/;
+						if(!this.form.lxfs){
+							this.messageShow = true
+							this.message = '请先输入联系方式'
+							setTimeout(() => {
+								this.messageShow = false
+								this.message = ''
+							}, 2000)
+							return
+						}
+						if(this.form.lxfs&&!regPhone.test(this.form.lxfs)){
+							this.messageShow = true
+							this.message = '请输入正确的联系方式'
+							setTimeout(() => {
+								this.messageShow = false
+								this.message = ''
+							}, 2000)
+							return
+						}
+						this.time=60
+						var timer=setInterval(()=>{
+							this.time--;
+							if (this.time <= 0) {
+							  clearInterval(timer);
+							}
+						},1000)
+						
+						$.ajax({
+							url:"https://ejw.herocheer.com/BmSystemServer/phoneCode?phone="+this.form.lxfs+"&state=0",
+							type: 'post',
+							headers: {
+								'content-type': 'application/json;charset=UTF-8'
+							},
+							success: function(res) {
+								if (res.success) {
+								}
+							}
+						})
+					},
+					submit() {
+						if (!(this.form.gsmc &&
+								this.form.lxr &&
+								this.form.lxfs &&
+								this.form.code &&
+								this.form.zddz &&
+								this.form.startTime &&
+								this.form.endTime &&
+								this.form.gsxz &&
+								this.form.zdlx)) {
+							this.messageShow = true
+							this.message = '请完善当前页面内容'
+							setTimeout(() => {
+								this.messageShow = false
+								this.message = ''
+							}, 2000)
+							return
+						}
+						if(this.form.zdlx=='其他'&&!this.form.remark){
+							this.messageShow = true
+							this.message = '请完善当前页面内容'
+							setTimeout(() => {
+								this.messageShow = false
+								this.message = ''
+							}, 2000)
+							return
+						}
+						this.form.openId=localStorage.getItem("openId")
+						console.log(this.form)
+						// /ptp/ezw/bmSiteBuild/siteApplication    市站点申请的
+						// /ptp/ezw/bmSiteLease/leaseApplication   个人/企业租凭申请
+						$.ajax({
+							url:"/ptp/ezw/bmSiteLease/leaseApplication",
+							type: 'post',
+							headers: {
+								'content-type': 'application/json;charset=UTF-8'
+							},
+							data: JSON.stringify(this.form),
+							success: function(res) {
+								if (res.success) {
+									this.messageShow = true
+									this.message = res.desc
+									setTimeout(() => {
+										this.messageShow = false
+										this.message = ''
+										window.location.href="siteApply.html"
+									}, 2000)
+								}
+							}
+						})
+					}
+				}
+			})
+		</script>
+	</body>
+</html>

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" />
+		<title>个人办事服务查询</title>
+		<link rel="stylesheet" type="text/css" href="css/common.css" />
+		<link rel="stylesheet" type="text/css" href="css/personal.css" />
+	</head>
+	<body>
+		<div class="wrap" id="app" v-cloak>
+			<div class="search-bar">
+				<input type="text" placeholder="输入关键词" v-model="moduleName" />
+				<p class="btn" @click="loadItemList">搜索</p>
+			</div>
+			<div class="select-wrap">
+				<div class="flex">
+					<select class="flex1 select" v-model="form.city" placeholder="选择市" @change="changeCity">
+						<option value ="">选择市</option>
+						<option v-for="item in cityObj" :value="item.codes" :label="item.names">{{item.names}}</option>
+					</select>
+					<select class="flex1 select" v-model="form.area" placeholder="选择区/县" @change="changeArea">
+						<option value ="">选择区/县</option>
+						<option v-for="item in areaObj" :value="item.codes" :label="item.names">{{item.names}}</option>
+					</select>
+				</div>
+				<div class="flex">
+					<select class="flex1 select" v-model="form.dept" placeholder="选择部门" @change="changeDept">
+						<option value ="">选择部门</option>
+						<option v-for="item in deptObj" :value="item.code" :label="item.name">{{item.name}}</option>
+					</select>
+				</div>
+			</div>
+			<div class="list" v-if="list&&list.length>0">
+				<div class="item" v-for="(item,index) in list" :key="index">
+					<p class="title" :class="{on:item.isExpand}" @click="changeExpand(item)">{{item.zzytjTagsName}}({{item.itemList.length}})</p>
+					<div class="sub-list" v-if="item.isExpand">
+						<div class="sub-item" v-for="(ite,indx) in item.itemList" :key="indx">
+							<div class="sub-lt">
+								<p class="shop" @click="goPage(ite,item.zzytjTagsName)">{{ite.itemName}}</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div v-else class="noData">
+				<img src="image/noData@2x.png" />
+				<p>数据暂未接入，敬请期待！</p>
+			</div>
+			<div v-if="loading" class="loading">
+				<p class="txt">正在加载中···</p>
+			</div>
+		</div>
+
+		<script src="https://mztapp.fujian.gov.cn:8190/mztAppWeb/app/js/zepto.js"></script>
+		<!-- 必引 cordova.js，实现与原生的交互 -->
+		<script src="https://mztapp.fujian.gov.cn:8190/mztAppWeb/app/js/cordova.js"> </script>
+		<!-- 含闽政通获取地市信息，网络状态等方法 -->
+		<script src="https://mztapp.fujian.gov.cn:8190/mztAppWeb/app/js/bingotouch.js"></script>
+		<!-- 含闽政通获取用户信息，分享，获取版本号，人脸识别方法 -->
+		<script src="https://mztapp.fujian.gov.cn:8190/mztAppWeb/app/js/jmtplugins.js"></script>
+		<!-- js 加解密 -->
+		<script src="https://mztapp.fujian.gov.cn:8190/mztAppWeb/app/js/jsencrypt.js"></script>
+
+		<script type="text/javascript" src="http://webapi.amap.com/maps?v=1.3&key=ae258dfd22e75e306de869d4a0fdcee2&plugin=AMap.ToolBar"></script>
+
+		<script src="js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/vue.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/common.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			new Vue({
+				el: '#app',
+				data() {
+					return {
+						loading:true,
+						moduleName: '',
+						list: [],
+						form:{
+							city:'',
+							area:'',
+							dept:''
+						},
+						cityObj: [],
+						areaObj: [],
+						deptObj: [],
+						curProvince: '',
+						curCity: '',
+						curArea: ''
+					}
+				},
+				created() {
+					var that = this;
+					if(this.getQueryVariable('cityCode')){
+						that.curCity = this.getQueryVariable('cityCode')
+						that.form.city = this.getQueryVariable('cityCode')
+					}
+					that.loadItemList()
+					that.loadDept()
+					that.loadCity(1)
+					
+				},
+				mounted() {
+					
+				},
+				methods: {
+					loadCity(levels,pid) {
+						var that = this
+						var params = {
+							page: {
+								page: 1,// int 当前页码 Y
+								pageSize: 20,// int 每页显示行数 Y 
+								total: 0
+							},
+							params: {
+								names:'',// String 名称 N 模糊查询
+								codes:'',// String 编码 N 模糊查询
+								shortNames:'',// Byte 简称 N 
+								longitude:'',// BigDecimal 经度 N 模糊查询
+								latitude:'',// BigDecimal 经度 N 
+								pid:pid,// String 上级id N 
+								levels:levels,// Integer 等级 N 1.省/直辖市，2.地级市，3区县，4镇/街道
+								sorts:'',// Integer 排序 N 
+								statu:'',// Integer 状态 N 0启用/1禁用
+								deleteState:''//Byte 是否删除 N
+							}
+						}
+						$.ajax({
+							url: '/ptp/sys/region/list',
+							type: 'post',
+							headers: {
+								'content-type': 'application/json;charset=UTF-8'
+							},
+							data: JSON.stringify(params),
+							success: function(res) {
+								if (res.success) {
+									var result=res.result.rows;
+									if(levels==1){
+										var fjInfo=result.filter(item=>{
+											return item.codes=='350000'
+										})
+										that.curCityId=fjInfo[0].id
+										that.loadCity(2,fjInfo[0].id)
+									}else if(levels==2){
+										that.cityObj=result;
+										var cityInfo=result.filter(item=>{
+											return item.codes==that.curCity
+										})
+										that.loadCity(3,cityInfo&&cityInfo.length>0&&cityInfo[0].id)
+									}else if(levels==3){
+										that.areaObj=result
+									}
+								}else{
+									if(levels==1){
+									}else if(levels==2){
+										that.cityObj=[];
+									}else if(levels==3){
+										that.areaObj=[]
+									}
+								}
+							}
+						})
+					},
+					// 部门查询
+					loadDept(){
+						var that=this;
+						$.ajax({
+							url: '/ptp/business/lwDept/listAll',
+							type: 'post',
+							headers: {
+								'content-type': 'application/json;charset=UTF-8'
+							},
+							data:{},
+							success: function(res) {
+								if (res.success) {
+									that.deptObj=res.result
+								}
+							}
+						})
+					},
+					// 办事服务查询
+					loadItemList(){
+						var that=this;
+						that.loading=true;
+						that.list=[]
+						var params ={
+							itemName:that.moduleName, //事项名称
+							cityCode:that.form.city||that.curCity, //市编码
+							districtCode:that.form.area, //区编码
+							zzytjTags:that.form.dept, //部门编码
+							itemServertype:"01" //01-个人,02-法人
+						}
+						$.ajax({
+							url: '/ptp/business/lwBusinessMatters/itemList',
+							type: 'post',
+							headers: {
+								'content-type': 'application/json;charset=UTF-8'
+							},
+							data:JSON.stringify(params),
+							success: function(res) {
+								that.loading=false;
+								if (res.success) {
+									res.result.forEach(item=>{
+										that.$set(item, 'isExpand', true)
+									})
+									that.list=res.result
+								}
+							}
+						})
+					},
+					changeExpand(item) {
+						item.isExpand = !item.isExpand
+						this.list.forEach(ite => {
+							if (item != ite) {
+								ite.isExpand = false
+							}
+						})
+					},
+					changeCity() {
+						this.curCity = this.form.city
+						var curCityObj=this.cityObj.find(item=>{return item.codes==this.curCity})
+						this.form.area=''
+						this.areaObj=[]
+						this.form.dept=''
+						this.loadCity(3,curCityObj&&curCityObj.id)
+						this.loadItemList()
+					},
+					changeArea() {
+						this.curArea = this.form.area
+						this.form.dept=''
+						this.loadItemList()
+					},
+					changeDept(){
+						this.loadItemList()
+					},
+					goPage(item,dept){
+						window.location.href = encodeURI('bsDetail.html?id='+item.id+'&dept='+dept)
+					},
+					getQueryVariable(variable) {
+						var query = window.location.search.substring(1);
+						var vars = query.split("&");
+						for (var i = 0; i < vars.length; i++) {
+							var pair = vars[i].split("=");
+							if (pair[0] == variable) {
+								return pair[1];
+							}
+						}
+						return (false);
+					}
+				}
+			})
+		</script>
+	</body>
+</html>

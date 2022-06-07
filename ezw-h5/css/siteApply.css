@@ -1,0 +1,29 @@
+.list{
+	padding: .3rem;
+	box-sizing: border-box;
+}
+.item{
+	padding: .5rem .8rem;
+	border-radius: .2rem;
+	color: #fff;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	font-size: .4rem;
+}
+.item:not(:last-child){
+	margin-bottom: .3rem;
+}
+.item img{
+	width: .6rem;
+	height: .6rem;
+}
+.item.blue{
+	background: linear-gradient(45deg, #0081ff, #1cbbb4);
+}
+.item.green{
+	background: linear-gradient(45deg, #39b54a, #8dc63f);
+}
+.item.orange{
+	background: linear-gradient(45deg, #ff9700, #ed1c24);
+}

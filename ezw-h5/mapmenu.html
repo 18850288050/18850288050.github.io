@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport"
+			content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" />
+		<title>首页</title>
+		<link rel="stylesheet" type="text/css" href="css/common.css" />
+		<link rel="stylesheet" type="text/css" href="css/mapmenu.css" />
+	</head>
+	<body>
+		<div class="wrap" id="app" v-cloak>
+			<div class="top-box">
+				<div class="pos-wrap">
+					<img @click="showPos" src="image/pos.png">
+					<p @click="showPos">{{curCity}}</p>
+				</div>
+			</div>
+			<img class="logo" src="image/indexLogo.png">
+			<div class="menu-list">
+				<p @click="goAllSitePage" class="menu-btn">全省站点查询</p>
+				<a href="map.html" class="menu-btn">最近站点导航</a>
+				<p @click="goServicePage" class="menu-btn">全省服务内容查询</p>
+				<p @click="goSiteApplyPage" class="menu-btn">站点申请</p>
+				<p @click="goPersonalPage" class="menu-btn">个人办事服务查询</p>
+				<p @click="golegalPersonalPage" class="menu-btn">法人办事服务查询</p>
+			</div>
+			<div class="notice-box">
+				<h1 class="title">通知公告</h1>
+				<div class="notice-list" v-if="list&&list.length>0">
+					<template v-for="(item,index) in list" :key="index">
+						<div class="notice-item" v-if="item.isshow==0" @click="goDetail(item)">
+							<div class="date-box">
+								<p class="year">{{item.year}}</p>
+								<p class="date">{{item.month}}/{{item.day}}</p>
+							</div>
+							<p class="notice-txt">{{item.title}}</p>
+						</div>
+					</template>
+				</div>
+				<p class="no-notice" v-if="list.length==0">暂无公告</p>
+			</div>
+			<div class="footer">
+				<div class="tips-box">
+					<p class="tips">客服电话：400-0592-195</p>
+					<p class="tips">主办机构：福建省大数据中心</p>
+				</div>
+				<div class="footer-menu">
+					<a class="menu-item on">
+						<img src="image/zddh1.png">
+						<p>站点导航</p>
+					</a>
+					<div @click="goServicePage" class="menu-item">
+						<img src="image/index2.png">
+						<p>服务内容</p>
+					</div>
+				</div>
+			</div>
+			
+			<div class="alert-bg" v-if="positionVisible">
+				<div class="alert-wrap">
+					<div class="alert-box">
+						<div class="alert-title">
+							<p>当前定位</p>
+							<img class="pos" src="image/pos@2x.png">
+							<p class="txt">{{curCity}}</p>
+							<img class="close" src="image/close.png" @click="positionVisible=false" />
+						</div>
+						<div class="alert-con">
+							<div class="con">
+								<p class="area-item"
+									:class="{on:location==item.codes}"
+									v-for="(item,index) in cityObj" :key="index" @click="changeArea(item)">
+									{{item.names}}
+								</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="alert-bg" v-if="tipsVisible">
+				<div class="alert-wrap">
+					<div class="alert-box">
+						<p class="p-alert-title">厦门“e政务”便民服务站市级社会化站点及租赁站点申请须知</p>
+						<div class="alert-content">
+							<p class="alert-para">
+								厦门“e政务”便民服务站市级社会化站点的建设工作已基本完成。鉴于仍有不少社会单位提出“e政务”建站申请，而市级社会化站点的新增建站设备只能从个别因办理量低、导服不到位的撤销站点中予以动态调整补充，根本无法满足当前的申请建站需要。为保证公正、公平、公开，最大限度满足群众办事需要，根据《厦门市行政审批制度改革工作领导小组办公室
+								厦门市公安局关于印发《提升厦门“e政务”便民服务站建设工作助力优化营商环境实施方案》的通知（厦审改办〔2019〕14号）中关于“e政务”设备提供模式实行“购租结合”的相关要求，“e政务”便民服务站市级社会化站点及租赁站点现依托“厦门e政务”小程序，向社会单位开放建站申请。具体申请须知如下：
+							</p>
+							<p class="alert-para">一、申请建站基本条件</p>
+							<p class="alert-para">（一）站点自愿提供独立电源、互联网有线网络（带宽不低于50M）、设备放置场地及导服服务。</p>
+							<p class="alert-para">（二）原则上周边15分钟步行路程范围内无其他站点。</p>
+							<p class="alert-para">（三）设备放置地点周围需保留20cm的空间，尽可能使设备背靠柱子或墙壁。（设备长63.5cm，宽65cm，高168cm）</p>
+							<p class="alert-para">（四）“e政务”自助终端设备放置地点应在室内，避免阳光直射。</p>
+							<p class="alert-para">（五）站点安排的导服人员应负责对设备进行日常运维管理，学习熟悉“e政务”业务，能主动为群众提供办事导服，并提供设备安全保障支持。</p>
+							<p class="alert-para">二、市级社会化站点建站优先原则</p>
+							<p class="alert-para">市级站点建设经费由市财政统一承担，属于公共服务资源。为确保公共服务资源利用最大化，根据站点的公共服务属性，将市级社会化站点分为以下两类站点，安排建站的先后顺序：</p>
+							<p class="alert-para">（一）优先级站点</p>
+							<p class="alert-para">便利店、地铁、车站、码头等可面向所有居民群众开放的人流密集公共场所以及大型企业园区为优先级站点。市级站点应根据周边站点布设及可服务群众数量情况，优先保障优先级站点的申请建站工作，并按照站点的申请时间先后顺序予以部署建站。</p>
+							<p class="alert-para">（二）一般级站点</p>
+							<p class="alert-para">医院、校园、酒店、写字楼等主要服务特定用户群体，但可满足周边居民群众方便、自由出入的场所为一般级站点。在周边（15分钟步行路程范围内）没有其他“e政务”站点，且周边服务群众数量较多、办事需求较大的情况下，市级站点可以按照申请时间先后顺序，在一般级站点进行建站。如后续一般级站点周边有新建成的优先级站点，且该优先级站点可以为居民群众提供更好服务的情况下，该一般级站点将予以撤站。</p>
+							<p class="alert-para">三、租赁站点建站原则</p>
+							<p class="alert-para">对于符合建站条件，且自愿选择租赁方式建站的社会化单位，在与“e政务”站点建设主管单位和设备采购中标单位签署三方建设管理协议后，可以建设租赁站点。其中，社会单位内部自用或服务用户群体单一的场所只能采用租赁设备的方式进行建站。</p>
+							<p class="alert-para">四、申请流程</p>
+							<p class="alert-para">（一）市级站点</p>
+							<p class="alert-para">1.社会化单位在“厦门e政务”小程序上提交申请信息。</p>
+							<p class="alert-para">2.“e政务”运维团队组织对满足建站条件的申请站点进行现场踩点。</p>
+							<p class="alert-para">3.根据现场踩点情况，市公安局“e政务”站点建设主管部门在后台进行审核：对符合建站条件的，审核通过并通知申请单位提交加盖单位印章的建站申请表；对不符合建设条件的，审核不通过并告知申请人审核不通过原因；对满足租赁建站条件的，审核不通过并告知可以选择租赁建站的方式。</p>
+							<p class="alert-para">4.市公安局“e政务”站点建设主管部门领导在建站申请表上审核确认，并与申请建站单位签署合作建站协议。</p>
+							<p class="alert-para">5.“e政务”运维团队根据站点类别和申请时间情况安排建站。</p>
+							<p class="alert-para">（二）租赁站点</p>
+							<p class="alert-para">1.社会化单位在“厦门e政务”小程序上提交申请信息。</p>
+							<p class="alert-para">2.市公安局“e政务”站点建设主管部门在后台审核确认。</p>
+							<p class="alert-para">3.“e政务”设备采购中标单位与申请建站单位具体对接租赁建站事宜，确定租赁关系。</p>
+							<p class="alert-para">4.市公安局“e政务”站点建设主管部门、设备采购中标单位、申请建站单位签署三方合作协议。</p>
+							<p class="alert-para">5.“e政务”设备采购中标单位安排建站。</p>
+							<p class="alert-para">以上如有未尽事宜，由市公安局“e政务”站点建设主管部门在具体站点建设对接中解释说明。</p>
+						</div>
+						<div class="alert-btn">
+							<p class="btn" @click="tipsVisible=false">取消</p>
+							<p class="btn" @click="jumpPage">确定</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script src="https://mztapp.fujian.gov.cn:8190/mztAppWeb/app/js/zepto.js"></script>
+		<!-- 必引 cordova.js，实现与原生的交互 -->
+		<script src="https://mztapp.fujian.gov.cn:8190/mztAppWeb/app/js/cordova.js"></script>
+		<!-- 含闽政通获取地市信息，网络状态等方法 -->
+		<script src="https://mztapp.fujian.gov.cn:8190/mztAppWeb/app/js/bingotouch.js"></script>
+		<!-- 含闽政通获取用户信息，分享，获取版本号，人脸识别方法 -->
+		<script src="https://mztapp.fujian.gov.cn:8190/mztAppWeb/app/js/jmtplugins.js"></script>
+		<!-- js 加解密 -->
+		<script src="https://mztapp.fujian.gov.cn:8190/mztAppWeb/app/js/jsencrypt.js"></script>
+
+		<script type="text/javascript"
+			src="http://webapi.amap.com/maps?v=1.3&key=ae258dfd22e75e306de869d4a0fdcee2&plugin=AMap.ToolBar"></script>
+
+
+		<script src="js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/vue.min.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+		
+		// 获取用户信息
+		app.page.onLoad=function(){
+			app.link.getLoginInfo(function(result){
+			 // app.alert(result)
+			 localStorage.setItem("openId",result.userId)
+			}); 
+		}
+		
+		
+		
+			new Vue({
+				el: '#app',
+				data() {
+					return {
+						list: [],
+						positionVisible: false,
+						curCity: '请选择地市',
+						curCityId: '',
+						curCityCode: '',
+						cityObj: {},
+						isServiceClick: false,
+						tipsVisible: false
+					}
+				},
+				created() {
+					if (sessionStorage.getItem('noticeObj')) {
+						sessionStorage.removeItem('noticeObj')
+					}
+					if (sessionStorage.getItem('curPos')) {
+						var curPos = JSON.parse(sessionStorage.getItem('curPos'))
+						this.curCity = curPos.curCity
+						this.curCityCode = curPos.curCityCode
+					}
+					this.loadCity(1)
+					this.loadList()
+				},
+				methods: {
+					loadCity(levels, pid) {
+						var that = this
+						var params = {
+							page: {
+								page: 1, // int 当前页码 Y
+								pageSize: 20, // int 每页显示行数 Y 
+								total: 0
+							},
+							params: {
+								names: '', // String 名称 N 模糊查询
+								codes: '', // String 编码 N 模糊查询
+								shortNames: '', // Byte 简称 N 
+								longitude: '', // BigDecimal 经度 N 模糊查询
+								latitude: '', // BigDecimal 经度 N 
+								pid: pid, // String 上级id N 
+								levels: levels, // Integer 等级 N 1.省/直辖市，2.地级市，3区县，4镇/街道
+								sorts: '', // Integer 排序 N 
+								statu: '', // Integer 状态 N 0启用/1禁用
+								deleteState: '' //Byte 是否删除 N
+							}
+						}
+						$.ajax({
+							url: '/ptp/sys/region/list',
+							type: 'post',
+							headers: {
+								'content-type': 'application/json;charset=UTF-8'
+							},
+							data: JSON.stringify(params),
+							success: function(res) {
+								if (res.success) {
+									if (!pid) {
+										var result = res.result.rows;
+										var fjInfo = result.filter(item => {
+											return item.codes == '350000'
+										})
+										that.curCityId = fjInfo[0].id
+										that.loadCity(2, fjInfo[0].id)
+									} else {
+										that.cityObj = res.result.rows
+									}
+								}
+							}
+						})
+					},
+					loadList() {
+						var that = this
+						var params = {
+							page: {
+								page: 1, // int 当前页码 Y
+								pageSize: 5, // int 每页显示行数 Y 
+								total: 0
+							},
+							params: {
+								title: '', // String 公告标题 N 模糊查询
+								content: '', // String 公告内容 N 模糊查询
+								isshow: 0 // String 是否显示 N 0:显示，1:不显示
+							}
+						}
+						$.ajax({
+							url: '/ptp/ezw/bmnotice/list',
+							type: 'post',
+							headers: {
+								'content-type': 'application/json;charset=UTF-8'
+							},
+							data: JSON.stringify(params),
+							success: function(res) {
+								if (res.success) {
+									var rows = res.result.rows;
+									rows.forEach((item) => {
+										var createTime = item.createTime;
+										createTime = createTime.slice(0, 10)
+										var createTimeArr = createTime.split("-")
+										that.$set(item, 'year', createTimeArr[0])
+										that.$set(item, 'month', createTimeArr[1])
+										that.$set(item, 'day', createTimeArr[2])
+									})
+									that.list = rows
+								}
+							}
+						})
+					},
+					changeArea(item) {
+						this.curCity = item.names
+						this.curCityCode = item.codes
+						this.positionVisible = false
+						sessionStorage.setItem('curPos', JSON.stringify({
+							curCity: this.curCity,
+							curCityCode: this.curCityCode
+						}))
+						if (this.isServiceClick) {
+							window.location.href = 'service.html?city=' + this.curCity + '&cityCode=' + this
+								.curCityCode + '&cityId=' + this.curCityId
+						}
+					},
+					goAllSitePage() {
+						window.location.href = 'allSite.html?city=' + encodeURI(this.curCity) + '&cityCode=' + this
+							.curCityCode + '&cityId=' + this.curCityId
+					},
+					goServicePage() {
+						if (this.curCity && this.curCityCode) {
+							window.location.href = 'service.html?city=' + this.curCity + '&cityCode=' + this
+								.curCityCode + '&cityId=' + this.curCityId
+						} else {
+							this.isServiceClick = true
+							this.positionVisible = true
+						}
+					},
+					goSiteApplyPage() {
+						this.tipsVisible = true;
+					},
+					goPersonalPage(){
+						window.location.href = 'personal.html?city=' + this.curCity + '&cityCode=' + this
+							.curCityCode + '&cityId=' + this.curCityId
+					},
+					golegalPersonalPage(){
+						window.location.href = 'legalPersonal.html?city=' + this.curCity + '&cityCode=' + this
+							.curCityCode + '&cityId=' + this.curCityId
+					},
+					jumpPage(){
+						this.tipsVisible=false
+						window.location.href = 'siteApply.html'
+					},
+					goDetail(item) {
+						sessionStorage.setItem('noticeObj', JSON.stringify(item))
+						window.location.href = 'notice_detail.html'
+					},
+					showPos() {
+						this.positionVisible = true
+					},
+				}
+			})
+		</script>
+	</body>
+</html>

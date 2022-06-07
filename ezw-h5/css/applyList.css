@@ -1,0 +1,42 @@
+body{
+	background-color: #f6f6f6;
+}
+.tab-list{
+	display: flex;
+	align-items: center;
+	height: 1rem;
+	margin-bottom: .2rem;
+	background-color: #fff;
+}
+.tab{
+	flex: 1;
+	text-align: center;
+	font-size: .36rem;
+	color: #333;
+}
+.tab.on{
+	color: #0081FF;
+}
+.list{
+	padding: 0 .3rem;
+	box-sizing: border-box;
+}
+.item{
+	background-color: #fff;
+	border-radius: .2rem;
+	padding: .3rem;
+	box-sizing: border-box;
+	font-size: .3rem;
+	color: #333;
+	display: flex;
+	align-items: flex-start;
+}
+.item .index{
+	margin-right: .2rem;
+}
+.item .box{
+	flex: 1;
+}
+.item:not(:last-child){
+	margin-bottom: .2rem;
+}

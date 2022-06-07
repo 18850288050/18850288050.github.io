@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0,user-scalable=no" />
+		<title>服务内容</title>
+		<link rel="stylesheet" type="text/css" href="css/common.css" />
+		<link rel="stylesheet" type="text/css" href="css/service.css" />
+	</head>
+	<body>
+		<div class="wrap" id="app" v-cloak>
+			<div class="search-bar">
+				<input type="text" placeholder="输入关键词" v-model="moduleName" />
+				<p class="btn" @click="loadList">搜索</p>
+			</div>
+			<div class="province-box">
+				<p class="prov" :class="{on:location=='460000'}" @click="changeProv('460000')">海南省</p>
+				<p class="prov" :class="{on:location=='450000'}" @click="changeProv('450000')">广西省</p>
+			</div>
+			<div v-if="list&&list.length>0" class="list">
+				<div class="item" v-for="(item,index) in list" :key="index">
+					<p class="title" :class="{on:item.isExpand}" @click="changeExpand(item)">{{item.name}}({{item.children.length}})</p>
+					<div class="sub-list" v-if="item.isExpand">
+						<div class="sub-item" v-for="(ite,indx) in item.children" :key="indx">
+							<p class="sub-lt">{{ite.modulename}}</p>
+							<!-- <p class="sub-btn" @click="goDetail(ite)">业务说明</p> -->
+						</div>
+					</div>
+				</div>
+			</div>
+			<div v-else class="noData">
+				<img src="image/noData@2x.png" />
+				<p>数据暂未接入，敬请期待！</p>
+			</div>
+			<div class="footer-menu">
+				<a href="mapmenu.html" class="menu-item">
+					<img src="image/zddh2.png">
+					<p>站点导航</p>
+				</a>
+				<a class="menu-item on">
+					<img src="image/index1.png">
+					<p>服务内容</p>
+				</a>
+			</div>
+			<div class="msg-bg" v-if="messageShow">
+				<div class="msg-wrap">
+					<p class="msg-content">{{message}}</p>
+				</div>
+			</div>
+		</div>
+		<script src="https://mztapp.fujian.gov.cn:8190/mztAppWeb/app/js/zepto.js"></script >
+		<!-- 必引 cordova.js，实现与原生的交互 -->
+		<script src = "https://mztapp.fujian.gov.cn:8190/mztAppWeb/app/js/cordova.js" ></script >
+		<!-- 含闽政通获取地市信息，网络状态等方法 --> 
+		<script src = "https://mztapp.fujian.gov.cn:8190/mztAppWeb/app/js/bingotouch.js" ></script>
+		<!-- 含闽政通获取用户信息，分享，获取版本号，人脸识别方法 -->
+		<script src="https://mztapp.fujian.gov.cn:8190/mztAppWeb/app/js/jmtplugins.js"></script>
+		<!-- js 加解密 -->
+		<script src="https://mztapp.fujian.gov.cn:8190/mztAppWeb/app/js/jsencrypt.js"></script>
+		
+		<script type="text/javascript" src="http://webapi.amap.com/maps?v=1.3&key=ae258dfd22e75e306de869d4a0fdcee2&plugin=AMap.ToolBar"></script>
+		
+		
+		<script src="js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/vue.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/common.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			
+			new Vue({
+				el: '#app',
+				data() {
+					return {
+						moduleName:'',
+						list:[],
+						choiceProvince:'',
+						curCity:'',
+						choiceCity:'',
+						location:'460000',
+						provinceObj:null,
+						cityObj:null,
+						positionVisible:false,
+						message:'',
+						messageShow:false
+					}
+				},
+				
+				created() {
+					var that=this;
+					that.loadList()
+				},
+				mounted() {
+					
+				},
+				methods: {
+					loadList() {
+						var that=this
+						var params={
+								page: {
+									page: 1,
+									pageSize: 1000,
+									total: 0
+								},
+								params: {
+									modulecode:'',// String 服务简码 N 模糊查询
+									modulename:that.moduleName,// String 服务名称 N 模糊查询
+									statuscode:'',// String 状态code N 1正常，0删除
+									parentName:''// String 父类名称 N 模糊查询
+								}
+							}
+						$.ajax({
+							url: '/ptp/ezw/buserver/listByCondition',
+							type: 'post',
+							headers:{
+								'content-type':'application/json;charset=UTF-8'
+							},
+							data: JSON.stringify(params),
+							success: function(res) {
+								if(res.success){
+									var arr=[]
+									for(var i in res.result.recodes){
+										arr.push({
+											name:i,
+											children:res.result.recodes[i]
+										})
+									}
+									if(arr.length>0){
+										arr.forEach(item=>{
+											that.$set(item,'isExpand',false)
+										})
+									}
+									that.list=arr
+								}else{
+									that.list=[]
+								}
+							}
+						})
+					},
+					changeExpand(item){
+						item.isExpand=!item.isExpand
+						this.list.forEach(ite=>{
+							if(item!=ite){
+								ite.isExpand=false
+							}
+						})
+					},
+					showPosition(){
+						this.choiceProvince='';
+						this.choiceCity='';
+						this.positionVisible=true;
+					},
+					changeProv(prov){
+						this.location=prov
+						this.loadList()
+					},
+					changeProvince(item){
+						this.location=item.codes;
+						this.choiceProvince=item.names
+						this.loadCity(item.id)
+					},
+					changeArea(item){
+						this.location=item.codes
+						this.choiceCity=item.names
+						this.curCity=this.choiceCity
+						this.loadList()
+						this.positionVisible=false
+					},
+					nextStep(){
+						this.messageShow=true
+						this.message='请选择下一级'
+						setTimeout(()=>{
+							this.messageShow=false
+							this.message=''
+						},2000)
+					},
+					clearCity(){
+						this.choiceProvince=''
+						this.choiceCity=''
+					},
+					goDetail(item){
+						window.location.href="detail.html?buServersDetailId="+item.buServersDetailId
+					},
+					getQueryVariable(variable) {
+						var query = window.location.search.substring(1);
+						var vars = query.split("&");
+						for (var i = 0; i < vars.length; i++) {
+							var pair = vars[i].split("=");
+							if (pair[0] == variable) {
+								return pair[1];
+							}
+						}
+						return (false);
+					}
+				}
+			})
+		
+		</script>
+	</body>
+</html>
